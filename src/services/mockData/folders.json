@@ -1,0 +1,50 @@
+[
+  {
+    "Id": 1,
+    "name": "Development",
+    "parentId": null,
+    "color": "#2563eb",
+    "createdAt": "2024-01-01T10:00:00Z",
+    "bookmarkCount": 4
+  },
+  {
+    "Id": 2,
+    "name": "Reading",
+    "parentId": null,
+    "color": "#059669",
+    "createdAt": "2024-01-01T10:05:00Z",
+    "bookmarkCount": 2
+  },
+  {
+    "Id": 3,
+    "name": "Design",
+    "parentId": null,
+    "color": "#dc2626",
+    "createdAt": "2024-01-01T10:10:00Z",
+    "bookmarkCount": 3
+  },
+  {
+    "Id": 4,
+    "name": "Entertainment",
+    "parentId": null,
+    "color": "#f59e0b",
+    "createdAt": "2024-01-01T10:15:00Z",
+    "bookmarkCount": 3
+  },
+  {
+    "Id": 5,
+    "name": "React Resources",
+    "parentId": 1,
+    "color": "#0284c7",
+    "createdAt": "2024-01-05T14:30:00Z",
+    "bookmarkCount": 0
+  },
+  {
+    "Id": 6,
+    "name": "CSS Frameworks",
+    "parentId": 1,
+    "color": "#7c3aed",
+    "createdAt": "2024-01-08T16:45:00Z",
+    "bookmarkCount": 0
+  }
+]

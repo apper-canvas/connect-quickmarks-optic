@@ -1,0 +1,38 @@
+[
+  {
+    "Id": 1,
+    "name": "development",
+    "color": "#2563eb",
+    "usageCount": 15
+  },
+  {
+    "Id": 2,
+    "name": "design",
+    "color": "#dc2626",
+    "usageCount": 12
+  },
+  {
+    "Id": 3,
+    "name": "javascript",
+    "color": "#f59e0b",
+    "usageCount": 8
+  },
+  {
+    "Id": 4,
+    "name": "css",
+    "color": "#059669",
+    "usageCount": 6
+  },
+  {
+    "Id": 5,
+    "name": "react",
+    "color": "#0284c7",
+    "usageCount": 5
+  },
+  {
+    "Id": 6,
+    "name": "streaming",
+    "color": "#7c3aed",
+    "usageCount": 4
+  }
+]

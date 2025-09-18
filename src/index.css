@@ -1,0 +1,40 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap");
+@import "react-toastify/dist/ReactToastify.css";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+.Toastify__toast-container {
+  z-index: 9999;
+}
+
+.Toastify__toast {
+  border-radius: 8px;
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+.Toastify__toast--success {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+}
+
+.Toastify__toast--error {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+}
+
+.Toastify__toast--warning {
+  background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+}
+
+.Toastify__toast--info {
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+}
