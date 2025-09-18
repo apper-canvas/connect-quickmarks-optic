@@ -1,136 +1,382 @@
-import bookmarksData from "../mockData/bookmarks.json";
-
 class BookmarkService {
   constructor() {
-    this.bookmarks = [...bookmarksData];
-  }
-
-  async delay(ms = 300) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    const { ApperClient } = window.ApperSDK;
+    this.apperClient = new ApperClient({
+      apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+      apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+    });
+    this.tableName = 'bookmark_c';
   }
 
   async getAll() {
-    await this.delay();
-    return [...this.bookmarks];
+    try {
+      const params = {
+        fields: [
+          {"field": {"Name": "url_c"}},
+          {"field": {"Name": "title_c"}},
+          {"field": {"Name": "description_c"}},
+          {"field": {"Name": "favicon_c"}},
+          {"field": {"Name": "folder_c"}},
+          {"field": {"Name": "tags_c"}},
+          {"field": {"Name": "created_at_c"}},
+          {"field": {"Name": "last_accessed_c"}},
+          {"field": {"Name": "access_count_c"}}
+        ],
+        orderBy: [{"fieldName": "created_at_c", "sorttype": "DESC"}],
+        pagingInfo: {"limit": 100, "offset": 0}
+      };
+      
+      const response = await this.apperClient.fetchRecords(this.tableName, params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        return [];
+      }
+      
+      return response.data || [];
+    } catch (error) {
+      console.error("Error fetching bookmarks:", error?.response?.data?.message || error);
+      return [];
+    }
   }
 
   async getById(id) {
-    await this.delay(200);
-    const bookmark = this.bookmarks.find(b => b.Id === parseInt(id));
-    if (!bookmark) {
-      throw new Error("Bookmark not found");
+    try {
+      const params = {
+        fields: [
+          {"field": {"Name": "url_c"}},
+          {"field": {"Name": "title_c"}},
+          {"field": {"Name": "description_c"}},
+          {"field": {"Name": "favicon_c"}},
+          {"field": {"Name": "folder_c"}},
+          {"field": {"Name": "tags_c"}},
+          {"field": {"Name": "created_at_c"}},
+          {"field": {"Name": "last_accessed_c"}},
+          {"field": {"Name": "access_count_c"}}
+        ]
+      };
+      
+      const response = await this.apperClient.getRecordById(this.tableName, parseInt(id), params);
+      
+      if (!response?.data) {
+        return null;
+      }
+      
+      return response.data;
+    } catch (error) {
+      console.error(`Error fetching bookmark ${id}:`, error?.response?.data?.message || error);
+      return null;
     }
-    return { ...bookmark };
   }
 
   async getByFolder(folderId) {
-    await this.delay();
-    return this.bookmarks.filter(b => b.folderId === parseInt(folderId)).map(b => ({ ...b }));
+    try {
+      const params = {
+        fields: [
+          {"field": {"Name": "url_c"}},
+          {"field": {"Name": "title_c"}},
+          {"field": {"Name": "description_c"}},
+          {"field": {"Name": "favicon_c"}},
+          {"field": {"Name": "folder_c"}},
+          {"field": {"Name": "tags_c"}},
+          {"field": {"Name": "created_at_c"}},
+          {"field": {"Name": "last_accessed_c"}},
+          {"field": {"Name": "access_count_c"}}
+        ],
+        where: [{"FieldName": "folder_c", "Operator": "EqualTo", "Values": [parseInt(folderId)]}],
+        orderBy: [{"fieldName": "created_at_c", "sorttype": "DESC"}],
+        pagingInfo: {"limit": 100, "offset": 0}
+      };
+      
+      const response = await this.apperClient.fetchRecords(this.tableName, params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        return [];
+      }
+      
+      return response.data || [];
+    } catch (error) {
+      console.error("Error fetching bookmarks by folder:", error?.response?.data?.message || error);
+      return [];
+    }
   }
 
   async search(query) {
-    await this.delay(250);
-    if (!query || query.trim() === "") {
-      return [...this.bookmarks];
-    }
+    try {
+      if (!query || query.trim() === "") {
+        return this.getAll();
+      }
 
-    const searchTerm = query.toLowerCase();
-    return this.bookmarks
-      .filter(bookmark => 
-        bookmark.title.toLowerCase().includes(searchTerm) ||
-        bookmark.description.toLowerCase().includes(searchTerm) ||
-        bookmark.url.toLowerCase().includes(searchTerm) ||
-        bookmark.tags.some(tag => tag.toLowerCase().includes(searchTerm))
-      )
-      .map(b => ({ ...b }));
+      const params = {
+        fields: [
+          {"field": {"Name": "url_c"}},
+          {"field": {"Name": "title_c"}},
+          {"field": {"Name": "description_c"}},
+          {"field": {"Name": "favicon_c"}},
+          {"field": {"Name": "folder_c"}},
+          {"field": {"Name": "tags_c"}},
+          {"field": {"Name": "created_at_c"}},
+          {"field": {"Name": "last_accessed_c"}},
+          {"field": {"Name": "access_count_c"}}
+        ],
+        whereGroups: [{
+          "operator": "OR",
+          "subGroups": [
+            {"conditions": [{"fieldName": "title_c", "operator": "Contains", "values": [query]}], "operator": "OR"},
+            {"conditions": [{"fieldName": "description_c", "operator": "Contains", "values": [query]}], "operator": "OR"},
+            {"conditions": [{"fieldName": "url_c", "operator": "Contains", "values": [query]}], "operator": "OR"},
+            {"conditions": [{"fieldName": "tags_c", "operator": "Contains", "values": [query]}], "operator": "OR"}
+          ]
+        }],
+        orderBy: [{"fieldName": "created_at_c", "sorttype": "DESC"}],
+        pagingInfo: {"limit": 100, "offset": 0}
+      };
+      
+      const response = await this.apperClient.fetchRecords(this.tableName, params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        return [];
+      }
+      
+      return response.data || [];
+    } catch (error) {
+      console.error("Error searching bookmarks:", error?.response?.data?.message || error);
+      return [];
+    }
   }
 
   async create(bookmarkData) {
-    await this.delay(400);
-    
-    const maxId = Math.max(...this.bookmarks.map(b => b.Id), 0);
-    const newBookmark = {
-      Id: maxId + 1,
-      url: bookmarkData.url,
-      title: bookmarkData.title,
-      description: bookmarkData.description || "",
-      favicon: `${new URL(bookmarkData.url).origin}/favicon.ico`,
-      folderId: bookmarkData.folderId || null,
-      tags: bookmarkData.tags || [],
-      createdAt: new Date().toISOString(),
-      lastAccessed: new Date().toISOString(),
-      accessCount: 0
-    };
-
-    this.bookmarks.push(newBookmark);
-    return { ...newBookmark };
+    try {
+      // Generate favicon URL if not provided
+      const favicon = bookmarkData.favicon_c || `${new URL(bookmarkData.url_c).origin}/favicon.ico`;
+      
+      const params = {
+        records: [{
+          url_c: bookmarkData.url_c,
+          title_c: bookmarkData.title_c,
+          description_c: bookmarkData.description_c || "",
+          favicon_c: favicon,
+          folder_c: bookmarkData.folder_c ? parseInt(bookmarkData.folder_c) : null,
+          tags_c: bookmarkData.tags_c || "",
+          access_count_c: 0
+        }]
+      };
+      
+      const response = await this.apperClient.createRecord(this.tableName, params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        return null;
+      }
+      
+      if (response.results) {
+        const successful = response.results.filter(r => r.success);
+        const failed = response.results.filter(r => !r.success);
+        
+        if (failed.length > 0) {
+          console.error(`Failed to create ${failed.length} bookmarks:`, failed);
+        }
+        
+        return successful.length > 0 ? successful[0].data : null;
+      }
+    } catch (error) {
+      console.error("Error creating bookmark:", error?.response?.data?.message || error);
+      return null;
+    }
   }
 
   async update(id, bookmarkData) {
-    await this.delay(350);
-    
-    const index = this.bookmarks.findIndex(b => b.Id === parseInt(id));
-    if (index === -1) {
-      throw new Error("Bookmark not found");
+    try {
+      const params = {
+        records: [{
+          Id: parseInt(id),
+          url_c: bookmarkData.url_c,
+          title_c: bookmarkData.title_c,
+          description_c: bookmarkData.description_c || "",
+          folder_c: bookmarkData.folder_c ? parseInt(bookmarkData.folder_c) : null,
+          tags_c: bookmarkData.tags_c || ""
+        }]
+      };
+      
+      const response = await this.apperClient.updateRecord(this.tableName, params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        return null;
+      }
+      
+      if (response.results) {
+        const successful = response.results.filter(r => r.success);
+        const failed = response.results.filter(r => !r.success);
+        
+        if (failed.length > 0) {
+          console.error(`Failed to update ${failed.length} bookmarks:`, failed);
+        }
+        
+        return successful.length > 0 ? successful[0].data : null;
+      }
+    } catch (error) {
+      console.error("Error updating bookmark:", error?.response?.data?.message || error);
+      return null;
     }
-
-    this.bookmarks[index] = {
-      ...this.bookmarks[index],
-      ...bookmarkData,
-      Id: parseInt(id)
-    };
-
-    return { ...this.bookmarks[index] };
   }
 
   async delete(id) {
-    await this.delay(300);
-    
-    const index = this.bookmarks.findIndex(b => b.Id === parseInt(id));
-    if (index === -1) {
-      throw new Error("Bookmark not found");
+    try {
+      const params = { 
+        RecordIds: [parseInt(id)]
+      };
+      
+      const response = await this.apperClient.deleteRecord(this.tableName, params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        return false;
+      }
+      
+      if (response.results) {
+        const successful = response.results.filter(r => r.success);
+        const failed = response.results.filter(r => !r.success);
+        
+        if (failed.length > 0) {
+          console.error(`Failed to delete ${failed.length} bookmarks:`, failed);
+        }
+        
+        return successful.length > 0;
+      }
+      
+      return true;
+    } catch (error) {
+      console.error("Error deleting bookmark:", error?.response?.data?.message || error);
+      return false;
     }
-
-    this.bookmarks.splice(index, 1);
-    return { success: true };
   }
 
   async bulkDelete(ids) {
-    await this.delay(400);
-    
-    const intIds = ids.map(id => parseInt(id));
-    this.bookmarks = this.bookmarks.filter(b => !intIds.includes(b.Id));
-    return { success: true, deletedCount: intIds.length };
+    try {
+      const params = { 
+        RecordIds: ids.map(id => parseInt(id))
+      };
+      
+      const response = await this.apperClient.deleteRecord(this.tableName, params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        return { success: false, deletedCount: 0 };
+      }
+      
+      if (response.results) {
+        const successful = response.results.filter(r => r.success);
+        const failed = response.results.filter(r => !r.success);
+        
+        if (failed.length > 0) {
+          console.error(`Failed to delete ${failed.length} bookmarks:`, failed);
+        }
+        
+        return { success: true, deletedCount: successful.length };
+      }
+      
+      return { success: true, deletedCount: ids.length };
+    } catch (error) {
+      console.error("Error bulk deleting bookmarks:", error?.response?.data?.message || error);
+      return { success: false, deletedCount: 0 };
+    }
   }
 
   async incrementAccessCount(id) {
-    await this.delay(100);
-    
-    const bookmark = this.bookmarks.find(b => b.Id === parseInt(id));
-    if (bookmark) {
-      bookmark.accessCount += 1;
-      bookmark.lastAccessed = new Date().toISOString();
+    try {
+      // First get current record
+      const bookmark = await this.getById(id);
+      if (!bookmark) return null;
+      
+      const currentCount = bookmark.access_count_c || 0;
+      
+      const params = {
+        records: [{
+          Id: parseInt(id),
+          access_count_c: currentCount + 1,
+          last_accessed_c: new Date().toISOString()
+        }]
+      };
+      
+      const response = await this.apperClient.updateRecord(this.tableName, params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        return null;
+      }
+      
+      return bookmark;
+    } catch (error) {
+      console.error("Error incrementing access count:", error?.response?.data?.message || error);
+      return null;
     }
-    
-    return bookmark ? { ...bookmark } : null;
   }
 
   async getRecent(limit = 10) {
-    await this.delay(200);
-    
-    return this.bookmarks
-      .sort((a, b) => new Date(b.lastAccessed) - new Date(a.lastAccessed))
-      .slice(0, limit)
-      .map(b => ({ ...b }));
+    try {
+      const params = {
+        fields: [
+          {"field": {"Name": "url_c"}},
+          {"field": {"Name": "title_c"}},
+          {"field": {"Name": "description_c"}},
+          {"field": {"Name": "favicon_c"}},
+          {"field": {"Name": "folder_c"}},
+          {"field": {"Name": "tags_c"}},
+          {"field": {"Name": "created_at_c"}},
+          {"field": {"Name": "last_accessed_c"}},
+          {"field": {"Name": "access_count_c"}}
+        ],
+        orderBy: [{"fieldName": "last_accessed_c", "sorttype": "DESC"}],
+        pagingInfo: {"limit": limit, "offset": 0}
+      };
+      
+      const response = await this.apperClient.fetchRecords(this.tableName, params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        return [];
+      }
+      
+      return response.data || [];
+    } catch (error) {
+      console.error("Error fetching recent bookmarks:", error?.response?.data?.message || error);
+      return [];
+    }
   }
 
   async getPopular(limit = 10) {
-    await this.delay(200);
-    
-    return this.bookmarks
-      .sort((a, b) => b.accessCount - a.accessCount)
-      .slice(0, limit)
-      .map(b => ({ ...b }));
+    try {
+      const params = {
+        fields: [
+          {"field": {"Name": "url_c"}},
+          {"field": {"Name": "title_c"}},
+          {"field": {"Name": "description_c"}},
+          {"field": {"Name": "favicon_c"}},
+          {"field": {"Name": "folder_c"}},
+          {"field": {"Name": "tags_c"}},
+          {"field": {"Name": "created_at_c"}},
+          {"field": {"Name": "last_accessed_c"}},
+          {"field": {"Name": "access_count_c"}}
+        ],
+        orderBy: [{"fieldName": "access_count_c", "sorttype": "DESC"}],
+        pagingInfo: {"limit": limit, "offset": 0}
+      };
+      
+      const response = await this.apperClient.fetchRecords(this.tableName, params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        return [];
+      }
+      
+      return response.data || [];
+    } catch (error) {
+      console.error("Error fetching popular bookmarks:", error?.response?.data?.message || error);
+      return [];
+    }
   }
 }
 

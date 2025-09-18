@@ -30,13 +30,13 @@ const BookmarkCard = ({
 
   const handleDelete = (e) => {
     e.stopPropagation();
-    onDelete(bookmark.Id);
+onDelete(bookmark.Id);
   };
 
   const handleSelect = (e) => {
     if (selectionMode) {
       e.stopPropagation();
-      onSelect(bookmark.Id);
+onSelect(bookmark.Id);
     }
   };
 
@@ -77,10 +77,10 @@ const BookmarkCard = ({
               </div>
             )}
             
-            <div className="w-8 h-8 flex-shrink-0 bg-gradient-to-br from-gray-100 to-gray-200 rounded flex items-center justify-center">
+<div className="w-8 h-8 flex-shrink-0 bg-gradient-to-br from-gray-100 to-gray-200 rounded flex items-center justify-center">
               {!imageError ? (
                 <img
-                  src={bookmark.favicon}
+                  src={bookmark.favicon_c}
                   alt=""
                   className="w-5 h-5 rounded"
                   onError={() => setImageError(true)}
@@ -92,10 +92,10 @@ const BookmarkCard = ({
             
             <div className="min-w-0 flex-1">
               <h3 className="font-semibold text-gray-900 truncate text-sm leading-5 bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-                {bookmark.title}
+                {bookmark.title_c}
               </h3>
               <p className="text-xs text-gray-500 truncate">
-                {getDomain(bookmark.url)}
+                {getDomain(bookmark.url_c)}
               </p>
             </div>
           </div>
@@ -122,26 +122,26 @@ const BookmarkCard = ({
           )}
         </div>
         
-        {bookmark.description && (
+{bookmark.description_c && (
           <p className="text-sm text-gray-600 mb-3 line-clamp-2 leading-5">
-            {bookmark.description}
+            {bookmark.description_c}
           </p>
         )}
         
-        {bookmark.tags && bookmark.tags.length > 0 && (
+{bookmark.tags_c && bookmark.tags_c.length > 0 && (
           <div className="flex flex-wrap gap-1 mb-3">
-            {bookmark.tags.slice(0, 3).map((tag, index) => (
+            {bookmark.tags_c.split(',').slice(0, 3).map((tag, index) => (
               <Badge
                 key={index}
                 variant="secondary"
                 className="text-xs bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700"
               >
-                {tag}
+                {tag.trim()}
               </Badge>
             ))}
-            {bookmark.tags.length > 3 && (
+            {bookmark.tags_c.split(',').length > 3 && (
               <Badge variant="outline" className="text-xs">
-                +{bookmark.tags.length - 3}
+                +{bookmark.tags_c.split(',').length - 3}
               </Badge>
             )}
           </div>
@@ -150,11 +150,11 @@ const BookmarkCard = ({
         <div className="flex items-center justify-between text-xs text-gray-500">
           <div className="flex items-center space-x-3">
             <span className="flex items-center">
-              <ApperIcon name="Eye" size={12} className="mr-1" />
-              {bookmark.accessCount}
+<ApperIcon name="Eye" size={12} className="mr-1" />
+              {bookmark.access_count_c || 0}
             </span>
             <span>
-              {formatDistanceToNow(new Date(bookmark.lastAccessed), { addSuffix: true })}
+              {formatDistanceToNow(new Date(bookmark.last_accessed_c || bookmark.created_at_c), { addSuffix: true })}
             </span>
           </div>
         </div>

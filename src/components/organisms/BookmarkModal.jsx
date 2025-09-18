@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
-import Modal from "@/components/atoms/Modal";
+import React, { useEffect, useState } from "react";
+import ApperIcon from "@/components/ApperIcon";
+import Badge from "@/components/atoms/Badge";
 import Button from "@/components/atoms/Button";
 import Input from "@/components/atoms/Input";
-import Badge from "@/components/atoms/Badge";
-import ApperIcon from "@/components/ApperIcon";
+import Modal from "@/components/atoms/Modal";
 import folderService from "@/services/api/folderService";
 import { cn } from "@/utils/cn";
 
@@ -14,36 +14,36 @@ const BookmarkModal = ({
   bookmark = null,
   defaultFolderId = null
 }) => {
-  const [formData, setFormData] = useState({
-    url: "",
-    title: "",
-    description: "",
-    folderId: null,
-    tags: []
+const [formData, setFormData] = useState({
+    url_c: "",
+    title_c: "",
+    description_c: "",
+    folder_c: null,
+    tags_c: ""
   });
   const [folders, setFolders] = useState([]);
   const [tagInput, setTagInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [urlError, setUrlError] = useState("");
 
-  useEffect(() => {
+useEffect(() => {
     if (isOpen) {
       loadFolders();
       if (bookmark) {
         setFormData({
-          url: bookmark.url || "",
-          title: bookmark.title || "",
-          description: bookmark.description || "",
-          folderId: bookmark.folderId || null,
-          tags: bookmark.tags || []
+          url_c: bookmark.url_c || "",
+          title_c: bookmark.title_c || "",
+          description_c: bookmark.description_c || "",
+          folder_c: bookmark.folder_c?.Id || bookmark.folder_c || null,
+          tags_c: bookmark.tags_c || ""
         });
       } else {
         setFormData({
-          url: "",
-          title: "",
-          description: "",
-          folderId: defaultFolderId,
-          tags: []
+          url_c: "",
+          title_c: "",
+          description_c: "",
+          folder_c: defaultFolderId,
+          tags_c: ""
         });
       }
       setUrlError("");
@@ -68,9 +68,9 @@ const BookmarkModal = ({
     }
   };
 
-  const handleUrlChange = (e) => {
+const handleUrlChange = (e) => {
     const url = e.target.value;
-    setFormData({ ...formData, url });
+    setFormData({ ...formData, url_c: url });
     
     if (url && !validateUrl(url)) {
       setUrlError("Please enter a valid URL");
@@ -79,50 +79,54 @@ const BookmarkModal = ({
     }
 
     // Auto-fetch title if URL is valid
-    if (validateUrl(url) && !formData.title) {
+    if (validateUrl(url) && !formData.title_c) {
       fetchTitleFromUrl(url);
     }
   };
 
-  const fetchTitleFromUrl = async (url) => {
+const fetchTitleFromUrl = async (url) => {
     try {
       // In a real app, this would make an API call to fetch the page title
       // For now, we'll extract from URL
       const domain = new URL(url).hostname.replace("www.", "");
       const title = domain.charAt(0).toUpperCase() + domain.slice(1);
-      setFormData(prev => ({ ...prev, title }));
+      setFormData(prev => ({ ...prev, title_c: title }));
     } catch (error) {
       console.error("Failed to fetch title:", error);
     }
   };
 
-  const handleAddTag = (e) => {
+const handleAddTag = (e) => {
     e.preventDefault();
-    if (tagInput.trim() && !formData.tags.includes(tagInput.trim().toLowerCase())) {
+    const currentTags = Array.isArray(formData.tags_c) ? formData.tags_c : formData.tags_c ? formData.tags_c.split(',').map(t => t.trim()) : [];
+    if (tagInput.trim() && !currentTags.includes(tagInput.trim().toLowerCase())) {
+      const newTags = [...currentTags, tagInput.trim().toLowerCase()];
       setFormData({
         ...formData,
-        tags: [...formData.tags, tagInput.trim().toLowerCase()]
+        tags_c: newTags.join(',')
       });
       setTagInput("");
     }
   };
 
   const handleRemoveTag = (tagToRemove) => {
+    const currentTags = Array.isArray(formData.tags_c) ? formData.tags_c : formData.tags_c ? formData.tags_c.split(',').map(t => t.trim()) : [];
+    const newTags = currentTags.filter(tag => tag !== tagToRemove);
     setFormData({
       ...formData,
-      tags: formData.tags.filter(tag => tag !== tagToRemove)
+      tags_c: newTags.join(',')
     });
   };
 
-  const handleSubmit = async (e) => {
+const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!formData.url || !validateUrl(formData.url)) {
+    if (!formData.url_c || !validateUrl(formData.url_c)) {
       setUrlError("Please enter a valid URL");
       return;
     }
 
-    if (!formData.title.trim()) {
+    if (!formData.title_c.trim()) {
       return;
     }
 
@@ -139,23 +143,23 @@ const BookmarkModal = ({
 
   const renderFolderOptions = (folders, parentId = null, level = 0) => {
     return folders
-      .filter(f => f.parentId === parentId)
+.filter(f => (f.parent_folder_c?.Id || f.parent_folder_c) === parentId)
       .map(folder => (
         <option key={folder.Id} value={folder.Id}>
-          {"  ".repeat(level)} {folder.name}
+          {"  ".repeat(level)} {folder.name_c}
         </option>
       ));
   };
 
-  const getAllFolderOptions = (folders) => {
+const getAllFolderOptions = (folders) => {
     const options = [];
     const renderLevel = (parentId = null, level = 0) => {
       folders
-        .filter(f => f.parentId === parentId)
+        .filter(f => (f.parent_folder_c?.Id || f.parent_folder_c) === parentId)
         .forEach(folder => {
           options.push(
             <option key={folder.Id} value={folder.Id}>
-              {"  ".repeat(level)} {folder.name}
+              {"  ".repeat(level)} {folder.name_c}
             </option>
           );
           renderLevel(folder.Id, level + 1);
@@ -178,9 +182,9 @@ const BookmarkModal = ({
           <label className="block text-sm font-medium text-gray-700">
             URL *
           </label>
-          <Input
+<Input
             type="url"
-            value={formData.url}
+            value={formData.url_c}
             onChange={handleUrlChange}
             placeholder="https://example.com"
             className={cn(
@@ -199,10 +203,10 @@ const BookmarkModal = ({
           <label className="block text-sm font-medium text-gray-700">
             Title *
           </label>
-          <Input
+<Input
             type="text"
-            value={formData.title}
-            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+            value={formData.title_c}
+            onChange={(e) => setFormData({ ...formData, title_c: e.target.value })}
             placeholder="Bookmark title"
             className="w-full"
             required
@@ -215,8 +219,8 @@ const BookmarkModal = ({
             Description
           </label>
           <textarea
-            value={formData.description}
-            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            value={formData.description_c}
+            onChange={(e) => setFormData({ ...formData, description_c: e.target.value })}
             placeholder="Optional description"
             rows={3}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 resize-none transition-colors"
@@ -229,10 +233,10 @@ const BookmarkModal = ({
             Folder
           </label>
           <select
-            value={formData.folderId || ""}
+value={formData.folder_c || ""}
             onChange={(e) => setFormData({ 
               ...formData, 
-              folderId: e.target.value ? parseInt(e.target.value) : null 
+              folder_c: e.target.value ? parseInt(e.target.value) : null 
             })}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 bg-white"
           >
@@ -271,10 +275,10 @@ const BookmarkModal = ({
             </Button>
           </div>
 
-          {/* Tag List */}
-          {formData.tags.length > 0 && (
+{/* Tag List */}
+          {formData.tags_c && (
             <div className="flex flex-wrap gap-2 mt-2">
-              {formData.tags.map((tag) => (
+              {(Array.isArray(formData.tags_c) ? formData.tags_c : formData.tags_c.split(',')).map((tag) => (
                 <Badge
                   key={tag}
                   variant="secondary"
@@ -304,9 +308,9 @@ const BookmarkModal = ({
           >
             Cancel
           </Button>
-          <Button
+<Button
             type="submit"
-            disabled={isLoading || !formData.url || !formData.title.trim() || !!urlError}
+            disabled={isLoading || !formData.url_c || !formData.title_c.trim() || !!urlError}
             className="flex items-center space-x-2"
           >
             {isLoading && <ApperIcon name="Loader2" size={16} className="animate-spin" />}

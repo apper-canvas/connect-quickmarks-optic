@@ -1,99 +1,255 @@
-import foldersData from "../mockData/folders.json";
-
 class FolderService {
   constructor() {
-    this.folders = [...foldersData];
-  }
-
-  async delay(ms = 300) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    const { ApperClient } = window.ApperSDK;
+    this.apperClient = new ApperClient({
+      apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+      apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+    });
+    this.tableName = 'folder_c';
   }
 
   async getAll() {
-    await this.delay();
-    return [...this.folders];
+    try {
+      const params = {
+        fields: [
+          {"field": {"Name": "name_c"}},
+          {"field": {"Name": "parent_folder_c"}},
+          {"field": {"Name": "color_c"}},
+          {"field": {"Name": "created_at_c"}},
+          {"field": {"Name": "bookmark_count_c"}}
+        ],
+        orderBy: [{"fieldName": "created_at_c", "sorttype": "ASC"}],
+        pagingInfo: {"limit": 100, "offset": 0}
+      };
+      
+      const response = await this.apperClient.fetchRecords(this.tableName, params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        return [];
+      }
+      
+      return response.data || [];
+    } catch (error) {
+      console.error("Error fetching folders:", error?.response?.data?.message || error);
+      return [];
+    }
   }
 
   async getById(id) {
-    await this.delay(200);
-    const folder = this.folders.find(f => f.Id === parseInt(id));
-    if (!folder) {
-      throw new Error("Folder not found");
+    try {
+      const params = {
+        fields: [
+          {"field": {"Name": "name_c"}},
+          {"field": {"Name": "parent_folder_c"}},
+          {"field": {"Name": "color_c"}},
+          {"field": {"Name": "created_at_c"}},
+          {"field": {"Name": "bookmark_count_c"}}
+        ]
+      };
+      
+      const response = await this.apperClient.getRecordById(this.tableName, parseInt(id), params);
+      
+      if (!response?.data) {
+        return null;
+      }
+      
+      return response.data;
+    } catch (error) {
+      console.error(`Error fetching folder ${id}:`, error?.response?.data?.message || error);
+      return null;
     }
-    return { ...folder };
   }
 
   async getRootFolders() {
-    await this.delay();
-    return this.folders.filter(f => f.parentId === null).map(f => ({ ...f }));
+    try {
+      const params = {
+        fields: [
+          {"field": {"Name": "name_c"}},
+          {"field": {"Name": "parent_folder_c"}},
+          {"field": {"Name": "color_c"}},
+          {"field": {"Name": "created_at_c"}},
+          {"field": {"Name": "bookmark_count_c"}}
+        ],
+        where: [{"FieldName": "parent_folder_c", "Operator": "DoesNotHaveValue", "Values": []}],
+        orderBy: [{"fieldName": "created_at_c", "sorttype": "ASC"}],
+        pagingInfo: {"limit": 100, "offset": 0}
+      };
+      
+      const response = await this.apperClient.fetchRecords(this.tableName, params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        return [];
+      }
+      
+      return response.data || [];
+    } catch (error) {
+      console.error("Error fetching root folders:", error?.response?.data?.message || error);
+      return [];
+    }
   }
 
   async getSubfolders(parentId) {
-    await this.delay();
-    return this.folders.filter(f => f.parentId === parseInt(parentId)).map(f => ({ ...f }));
+    try {
+      const params = {
+        fields: [
+          {"field": {"Name": "name_c"}},
+          {"field": {"Name": "parent_folder_c"}},
+          {"field": {"Name": "color_c"}},
+          {"field": {"Name": "created_at_c"}},
+          {"field": {"Name": "bookmark_count_c"}}
+        ],
+        where: [{"FieldName": "parent_folder_c", "Operator": "EqualTo", "Values": [parseInt(parentId)]}],
+        orderBy: [{"fieldName": "created_at_c", "sorttype": "ASC"}],
+        pagingInfo: {"limit": 100, "offset": 0}
+      };
+      
+      const response = await this.apperClient.fetchRecords(this.tableName, params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        return [];
+      }
+      
+      return response.data || [];
+    } catch (error) {
+      console.error("Error fetching subfolders:", error?.response?.data?.message || error);
+      return [];
+    }
   }
 
   async create(folderData) {
-    await this.delay(350);
-    
-    const maxId = Math.max(...this.folders.map(f => f.Id), 0);
-    const newFolder = {
-      Id: maxId + 1,
-      name: folderData.name,
-      parentId: folderData.parentId || null,
-      color: folderData.color || "#64748b",
-      createdAt: new Date().toISOString(),
-      bookmarkCount: 0
-    };
-
-    this.folders.push(newFolder);
-    return { ...newFolder };
+    try {
+      const params = {
+        records: [{
+          name_c: folderData.name_c,
+          parent_folder_c: folderData.parent_folder_c ? parseInt(folderData.parent_folder_c) : null,
+          color_c: folderData.color_c || "#64748b",
+          bookmark_count_c: 0
+        }]
+      };
+      
+      const response = await this.apperClient.createRecord(this.tableName, params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        return null;
+      }
+      
+      if (response.results) {
+        const successful = response.results.filter(r => r.success);
+        const failed = response.results.filter(r => !r.success);
+        
+        if (failed.length > 0) {
+          console.error(`Failed to create ${failed.length} folders:`, failed);
+        }
+        
+        return successful.length > 0 ? successful[0].data : null;
+      }
+    } catch (error) {
+      console.error("Error creating folder:", error?.response?.data?.message || error);
+      return null;
+    }
   }
 
   async update(id, folderData) {
-    await this.delay(300);
-    
-    const index = this.folders.findIndex(f => f.Id === parseInt(id));
-    if (index === -1) {
-      throw new Error("Folder not found");
+    try {
+      const params = {
+        records: [{
+          Id: parseInt(id),
+          name_c: folderData.name_c,
+          parent_folder_c: folderData.parent_folder_c ? parseInt(folderData.parent_folder_c) : null,
+          color_c: folderData.color_c || "#64748b"
+        }]
+      };
+      
+      const response = await this.apperClient.updateRecord(this.tableName, params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        return null;
+      }
+      
+      if (response.results) {
+        const successful = response.results.filter(r => r.success);
+        const failed = response.results.filter(r => !r.success);
+        
+        if (failed.length > 0) {
+          console.error(`Failed to update ${failed.length} folders:`, failed);
+        }
+        
+        return successful.length > 0 ? successful[0].data : null;
+      }
+    } catch (error) {
+      console.error("Error updating folder:", error?.response?.data?.message || error);
+      return null;
     }
-
-    this.folders[index] = {
-      ...this.folders[index],
-      ...folderData,
-      Id: parseInt(id)
-    };
-
-    return { ...this.folders[index] };
   }
 
   async delete(id) {
-    await this.delay(350);
-    
-    const index = this.folders.findIndex(f => f.Id === parseInt(id));
-    if (index === -1) {
-      throw new Error("Folder not found");
+    try {
+      // First check if folder has subfolders
+      const subfolders = await this.getSubfolders(id);
+      if (subfolders.length > 0) {
+        throw new Error("Cannot delete folder with subfolders");
+      }
+      
+      const params = { 
+        RecordIds: [parseInt(id)]
+      };
+      
+      const response = await this.apperClient.deleteRecord(this.tableName, params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        return false;
+      }
+      
+      if (response.results) {
+        const successful = response.results.filter(r => r.success);
+        const failed = response.results.filter(r => !r.success);
+        
+        if (failed.length > 0) {
+          console.error(`Failed to delete ${failed.length} folders:`, failed);
+        }
+        
+        return successful.length > 0;
+      }
+      
+      return true;
+    } catch (error) {
+      console.error("Error deleting folder:", error?.response?.data?.message || error);
+      return false;
     }
-
-    // Check if folder has subfolders
-    const hasSubfolders = this.folders.some(f => f.parentId === parseInt(id));
-    if (hasSubfolders) {
-      throw new Error("Cannot delete folder with subfolders");
-    }
-
-    this.folders.splice(index, 1);
-    return { success: true };
   }
 
   async updateBookmarkCount(id, count) {
-    await this.delay(100);
-    
-    const folder = this.folders.find(f => f.Id === parseInt(id));
-    if (folder) {
-      folder.bookmarkCount = count;
+    try {
+      const params = {
+        records: [{
+          Id: parseInt(id),
+          bookmark_count_c: count
+        }]
+      };
+      
+      const response = await this.apperClient.updateRecord(this.tableName, params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        return null;
+      }
+      
+      if (response.results) {
+        const successful = response.results.filter(r => r.success);
+        return successful.length > 0 ? successful[0].data : null;
+      }
+      
+      return null;
+    } catch (error) {
+      console.error("Error updating bookmark count:", error?.response?.data?.message || error);
+      return null;
     }
-    
-    return folder ? { ...folder } : null;
   }
 }
 

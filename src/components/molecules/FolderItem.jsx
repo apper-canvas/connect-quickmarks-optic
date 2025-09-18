@@ -56,15 +56,15 @@ const FolderItem = ({
       {!hasChildren && level > 0 && <div className="w-5 mr-2" />}
       
       <div
-        className="w-3 h-3 rounded-sm mr-3 shadow-sm"
-        style={{ backgroundColor: folder.color }}
+className="w-3 h-3 rounded-sm mr-3 shadow-sm"
+        style={{ backgroundColor: folder.color_c }}
       />
       
       <span className="flex-1 font-medium truncate">
-        {folder.name}
+        {folder.name_c}
       </span>
       
-      {folder.bookmarkCount > 0 && (
+{folder.bookmark_count_c > 0 && (
         <Badge
           variant={isActive ? "secondary" : "outline"}
           className={cn(
@@ -74,7 +74,7 @@ const FolderItem = ({
               : "bg-gray-100 text-gray-600 border-gray-300"
           )}
         >
-          {folder.bookmarkCount}
+          {folder.bookmark_count_c}
         </Badge>
       )}
     </div>

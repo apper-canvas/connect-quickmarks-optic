@@ -33,7 +33,7 @@ const Sidebar = ({
     }
   };
 
-  const handleFolderSelect = (folder) => {
+const handleFolderSelect = (folder) => {
     onFolderSelect(folder?.Id || null);
     onCloseMobile?.();
   };
@@ -52,7 +52,7 @@ const Sidebar = ({
     const filteredFolders = folders.filter(f => f.parentId === parentId);
     
     return filteredFolders.map(folder => {
-      const hasChildren = folders.some(f => f.parentId === folder.Id);
+const hasChildren = folders.some(f => (f.parent_folder_c?.Id || f.parent_folder_c) === folder.Id);
       const isExpanded = expandedFolders.has(folder.Id);
       
       return (
@@ -68,7 +68,7 @@ const Sidebar = ({
           />
           {hasChildren && isExpanded && (
             <div className="ml-2">
-              {renderFolderTree(folders, folder.Id, level + 1)}
+{renderFolderTree(folders, folder.Id, level + 1)}
             </div>
           )}
         </div>

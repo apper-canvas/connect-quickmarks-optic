@@ -8,6 +8,8 @@ import BulkActions from "@/components/organisms/BulkActions";
 import Loading from "@/components/ui/Loading";
 import Error from "@/components/ui/Error";
 import Empty from "@/components/ui/Empty";
+import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import bookmarkService from "@/services/api/bookmarkService";
 import folderService from "@/services/api/folderService";
 import { toast } from "react-toastify";
@@ -82,7 +84,7 @@ const BookmarksPage = () => {
 
   const handleSaveBookmark = async (bookmarkData) => {
     try {
-      if (editingBookmark) {
+if (editingBookmark) {
         await bookmarkService.update(editingBookmark.Id, bookmarkData);
         toast.success("Bookmark updated successfully");
       } else {
@@ -110,7 +112,8 @@ const BookmarksPage = () => {
 
   const handleOpenBookmark = async (bookmark) => {
     try {
-      await bookmarkService.incrementAccessCount(bookmark.Id);
+await bookmarkService.incrementAccessCount(bookmark.Id);
+      window.open(bookmark.url_c, '_blank');
       window.open(bookmark.url, "_blank", "noopener,noreferrer");
     } catch (err) {
       console.error("Failed to update access count:", err);

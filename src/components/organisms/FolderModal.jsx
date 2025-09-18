@@ -12,9 +12,9 @@ const FolderModal = ({
   folder = null 
 }) => {
   const [formData, setFormData] = useState({
-    name: "",
-    color: "#2563eb",
-    parentId: null
+name_c: "",
+    color_c: "#2563eb",
+    parent_folder_c: null
   });
   const [folders, setFolders] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -34,10 +34,10 @@ const FolderModal = ({
     if (isOpen) {
       loadFolders();
       if (folder) {
-        setFormData({
-          name: folder.name || "",
-          color: folder.color || "#2563eb",
-          parentId: folder.parentId || null
+setFormData({
+          name_c: folder.name_c || "",
+          color_c: folder.color_c || "#2563eb",
+          parent_folder_c: folder.parent_folder_c?.Id || folder.parent_folder_c || null
         });
       } else {
         setFormData({
@@ -53,8 +53,8 @@ const FolderModal = ({
     try {
       const data = await folderService.getAll();
       // Filter out the current folder and its descendants to prevent circular references
-      const availableFolders = folder 
-        ? data.filter(f => f.Id !== folder.Id && f.parentId !== folder.Id)
+const availableFolders = folder 
+        ? data.filter(f => f.Id !== folder.Id && (f.parent_folder_c?.Id || f.parent_folder_c) !== folder.Id)
         : data;
       setFolders(availableFolders);
     } catch (error) {
@@ -65,12 +65,12 @@ const FolderModal = ({
   const getAllFolderOptions = (folders) => {
     const options = [];
     const renderLevel = (parentId = null, level = 0) => {
-      folders
-        .filter(f => f.parentId === parentId)
+folders
+        .filter(f => (f.parent_folder_c?.Id || f.parent_folder_c) === parentId)
         .forEach(folder => {
           options.push(
             <option key={folder.Id} value={folder.Id}>
-              {"  ".repeat(level)} {folder.name}
+              {"  ".repeat(level)} {folder.name_c}
             </option>
           );
           renderLevel(folder.Id, level + 1);
@@ -127,10 +127,10 @@ const FolderModal = ({
             Parent Folder
           </label>
           <select
-            value={formData.parentId || ""}
+value={formData.parent_folder_c || ""}
             onChange={(e) => setFormData({ 
               ...formData, 
-              parentId: e.target.value ? parseInt(e.target.value) : null 
+              parent_folder_c: e.target.value ? parseInt(e.target.value) : null 
             })}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 bg-white"
           >
