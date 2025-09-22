@@ -17,7 +17,8 @@ const BookmarkModal = ({
 const [formData, setFormData] = useState({
     url_c: "",
     title_c: "",
-    description_c: "",
+description_c: "",
+    icon_c: "",
     folder_c: null,
     tags_c: ""
   });
@@ -34,6 +35,7 @@ useEffect(() => {
           url_c: bookmark.url_c || "",
           title_c: bookmark.title_c || "",
           description_c: bookmark.description_c || "",
+icon_c: bookmark.icon_c || "",
           folder_c: bookmark.folder_c?.Id || bookmark.folder_c || null,
           tags_c: bookmark.tags_c || ""
         });
@@ -42,6 +44,7 @@ useEffect(() => {
           url_c: "",
           title_c: "",
           description_c: "",
+icon_c: "",
           folder_c: defaultFolderId,
           tags_c: ""
         });
@@ -211,6 +214,26 @@ const getAllFolderOptions = (folders) => {
             className="w-full"
             required
           />
+        </div>
+
+{/* Icon Field */}
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-700">
+            Icon
+          </label>
+          <Input
+            type="text"
+            value={formData.icon_c}
+            onChange={(e) => setFormData(prev => ({
+              ...prev,
+              icon_c: e.target.value
+            }))}
+            placeholder="e.g., Bookmark, Star, Heart (optional)"
+            className="w-full"
+          />
+          <p className="text-xs text-gray-500">
+            Enter an icon name from Lucide icons (optional). Leave blank to use favicon.
+          </p>
         </div>
 
         {/* Description Field */}

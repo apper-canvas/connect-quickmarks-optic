@@ -10,12 +10,13 @@ class BookmarkService {
 
   async getAll() {
     try {
-      const params = {
+const params = {
         fields: [
           {"field": {"Name": "url_c"}},
           {"field": {"Name": "title_c"}},
           {"field": {"Name": "description_c"}},
           {"field": {"Name": "favicon_c"}},
+          {"field": {"Name": "icon_c"}},
           {"field": {"Name": "folder_c"}},
           {"field": {"Name": "tags_c"}},
           {"field": {"Name": "created_at_c"}},
@@ -23,7 +24,8 @@ class BookmarkService {
           {"field": {"Name": "access_count_c"}}
         ],
         orderBy: [{"fieldName": "created_at_c", "sorttype": "DESC"}],
-        pagingInfo: {"limit": 100, "offset": 0}
+pagingInfo: {"limit": 100, "offset": 0},
+        where: [{"FieldName": "Owner", "Operator": "EqualTo", "Values": [store.getState().user.user?.userId]}]
       };
       
       const response = await this.apperClient.fetchRecords(this.tableName, params);
@@ -42,18 +44,20 @@ class BookmarkService {
 
   async getById(id) {
     try {
-      const params = {
+const params = {
         fields: [
           {"field": {"Name": "url_c"}},
           {"field": {"Name": "title_c"}},
           {"field": {"Name": "description_c"}},
           {"field": {"Name": "favicon_c"}},
+          {"field": {"Name": "icon_c"}},
           {"field": {"Name": "folder_c"}},
           {"field": {"Name": "tags_c"}},
           {"field": {"Name": "created_at_c"}},
           {"field": {"Name": "last_accessed_c"}},
           {"field": {"Name": "access_count_c"}}
-        ]
+        ],
+        where: [{"FieldName": "Owner", "Operator": "EqualTo", "Values": [store.getState().user.user?.userId]}]
       };
       
       const response = await this.apperClient.getRecordById(this.tableName, parseInt(id), params);
@@ -71,19 +75,23 @@ class BookmarkService {
 
   async getByFolder(folderId) {
     try {
-      const params = {
+const params = {
         fields: [
           {"field": {"Name": "url_c"}},
           {"field": {"Name": "title_c"}},
           {"field": {"Name": "description_c"}},
           {"field": {"Name": "favicon_c"}},
+          {"field": {"Name": "icon_c"}},
           {"field": {"Name": "folder_c"}},
           {"field": {"Name": "tags_c"}},
           {"field": {"Name": "created_at_c"}},
           {"field": {"Name": "last_accessed_c"}},
           {"field": {"Name": "access_count_c"}}
         ],
-        where: [{"FieldName": "folder_c", "Operator": "EqualTo", "Values": [parseInt(folderId)]}],
+        where: [
+          {"FieldName": "folder_c", "Operator": "EqualTo", "Values": [parseInt(folderId)]},
+          {"FieldName": "Owner", "Operator": "EqualTo", "Values": [store.getState().user.user?.userId]}
+        ],
         orderBy: [{"fieldName": "created_at_c", "sorttype": "DESC"}],
         pagingInfo: {"limit": 100, "offset": 0}
       };
@@ -108,25 +116,38 @@ class BookmarkService {
         return this.getAll();
       }
 
-      const params = {
+const params = {
         fields: [
           {"field": {"Name": "url_c"}},
           {"field": {"Name": "title_c"}},
           {"field": {"Name": "description_c"}},
           {"field": {"Name": "favicon_c"}},
+          {"field": {"Name": "icon_c"}},
           {"field": {"Name": "folder_c"}},
           {"field": {"Name": "tags_c"}},
           {"field": {"Name": "created_at_c"}},
           {"field": {"Name": "last_accessed_c"}},
           {"field": {"Name": "access_count_c"}}
         ],
+        where: [{"FieldName": "Owner", "Operator": "EqualTo", "Values": [store.getState().user.user?.userId]}],
         whereGroups: [{
-          "operator": "OR",
+          "operator": "AND",
           "subGroups": [
-            {"conditions": [{"fieldName": "title_c", "operator": "Contains", "values": [query]}], "operator": "OR"},
-            {"conditions": [{"fieldName": "description_c", "operator": "Contains", "values": [query]}], "operator": "OR"},
-            {"conditions": [{"fieldName": "url_c", "operator": "Contains", "values": [query]}], "operator": "OR"},
-            {"conditions": [{"fieldName": "tags_c", "operator": "Contains", "values": [query]}], "operator": "OR"}
+            {
+              "conditions": [
+                {"fieldName": "Owner", "operator": "EqualTo", "values": [store.getState().user.user?.userId]}
+              ],
+              "operator": ""
+            },
+            {
+              "operator": "OR",
+              "subGroups": [
+                {"conditions": [{"fieldName": "title_c", "operator": "Contains", "values": [query]}], "operator": "OR"},
+                {"conditions": [{"fieldName": "description_c", "operator": "Contains", "values": [query]}], "operator": "OR"},
+                {"conditions": [{"fieldName": "url_c", "operator": "Contains", "values": [query]}], "operator": "OR"},
+                {"conditions": [{"fieldName": "tags_c", "operator": "Contains", "values": [query]}], "operator": "OR"}
+              ]
+            }
           ]
         }],
         orderBy: [{"fieldName": "created_at_c", "sorttype": "DESC"}],
@@ -149,7 +170,7 @@ class BookmarkService {
 
   async create(bookmarkData) {
     try {
-      // Generate favicon URL if not provided
+// Generate favicon URL if not provided
       const favicon = bookmarkData.favicon_c || `${new URL(bookmarkData.url_c).origin}/favicon.ico`;
       
       const params = {
@@ -158,6 +179,7 @@ class BookmarkService {
           title_c: bookmarkData.title_c,
           description_c: bookmarkData.description_c || "",
           favicon_c: favicon,
+          icon_c: bookmarkData.icon_c || "",
           folder_c: bookmarkData.folder_c ? parseInt(bookmarkData.folder_c) : null,
           tags_c: bookmarkData.tags_c || "",
           access_count_c: 0
@@ -189,12 +211,13 @@ class BookmarkService {
 
   async update(id, bookmarkData) {
     try {
-      const params = {
+const params = {
         records: [{
           Id: parseInt(id),
           url_c: bookmarkData.url_c,
           title_c: bookmarkData.title_c,
           description_c: bookmarkData.description_c || "",
+          icon_c: bookmarkData.icon_c || "",
           folder_c: bookmarkData.folder_c ? parseInt(bookmarkData.folder_c) : null,
           tags_c: bookmarkData.tags_c || ""
         }]
@@ -317,18 +340,20 @@ class BookmarkService {
 
   async getRecent(limit = 10) {
     try {
-      const params = {
+const params = {
         fields: [
           {"field": {"Name": "url_c"}},
           {"field": {"Name": "title_c"}},
           {"field": {"Name": "description_c"}},
           {"field": {"Name": "favicon_c"}},
+          {"field": {"Name": "icon_c"}},
           {"field": {"Name": "folder_c"}},
           {"field": {"Name": "tags_c"}},
           {"field": {"Name": "created_at_c"}},
           {"field": {"Name": "last_accessed_c"}},
           {"field": {"Name": "access_count_c"}}
         ],
+        where: [{"FieldName": "Owner", "Operator": "EqualTo", "Values": [store.getState().user.user?.userId]}],
         orderBy: [{"fieldName": "last_accessed_c", "sorttype": "DESC"}],
         pagingInfo: {"limit": limit, "offset": 0}
       };
@@ -350,17 +375,19 @@ class BookmarkService {
   async getPopular(limit = 10) {
     try {
       const params = {
-        fields: [
+fields: [
           {"field": {"Name": "url_c"}},
           {"field": {"Name": "title_c"}},
           {"field": {"Name": "description_c"}},
           {"field": {"Name": "favicon_c"}},
+          {"field": {"Name": "icon_c"}},
           {"field": {"Name": "folder_c"}},
           {"field": {"Name": "tags_c"}},
           {"field": {"Name": "created_at_c"}},
           {"field": {"Name": "last_accessed_c"}},
           {"field": {"Name": "access_count_c"}}
         ],
+        where: [{"FieldName": "Owner", "Operator": "EqualTo", "Values": [store.getState().user.user?.userId]}],
         orderBy: [{"fieldName": "access_count_c", "sorttype": "DESC"}],
         pagingInfo: {"limit": limit, "offset": 0}
       };

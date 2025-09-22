@@ -78,7 +78,9 @@ onSelect(bookmark.Id);
             )}
             
 <div className="w-8 h-8 flex-shrink-0 bg-gradient-to-br from-gray-100 to-gray-200 rounded flex items-center justify-center">
-              {!imageError ? (
+              {bookmark.icon_c ? (
+                <ApperIcon name={bookmark.icon_c} size={16} className="text-gray-600" />
+              ) : !imageError ? (
                 <img
                   src={bookmark.favicon_c}
                   alt=""
